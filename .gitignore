@@ -1,0 +1,16 @@
+cat_id_to_tokenized_name.csv
+category_data/
+catid_catname.csv
+data/
+env/
+fastText.py/
+largewv_300_2.txt
+main_cat_list.pkl
+mlp/
+models/
+production/
+train_data/
+*pyc
+*txt
+tem_list
+

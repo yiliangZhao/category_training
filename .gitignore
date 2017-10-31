@@ -13,4 +13,4 @@ train_data/
 *pyc
 *txt
 tem_list
-
+catlist.pickle

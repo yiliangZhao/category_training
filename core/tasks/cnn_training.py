@@ -41,7 +41,7 @@ from data_helpers import load_data, load_gensim_w2v, add_unknown_words, get_W
 MAIN_CAT_LIST = "/data1/category_production/main_cat_list.pkl"
 W2V_FILE = '/data1/w2v_files/w2v_tw/300_dim/largewv_300_2'
 CATID_NAME_MAPPING = "/data1/category_production/catid_catname.csv"
-
+LEVEL3_CAT_LIST = "/data1/category_production/catlist.pickle"
 
 def in_top3(y_tue, y_pred):
     return top_k_categorical_accuracy(y_tue, y_pred, k=3)
@@ -113,8 +113,11 @@ def train_cnn(**kwargs):
     with open(MAIN_CAT_LIST, 'rb') as f:
         cat_ids = pickle.load(f)
 
-    df_cat_name = pd.read_csv(CATID_NAME_MAPPING)
-    set_others = set(df_cat_name['level3_cat'])
+    with open(LEVEL3_CAT_LIST, 'rb') as f:
+        level3_cat_ids = pickle.load(f)
+
+    # df_cat_name = pd.read_csv(CATID_NAME_MAPPING)
+    # set_others = set(df_cat_name['level3_cat'])
     for cat_id in cat_ids:
         all_title = [] # list of title + description, list(str)
         all_label = [] # list of labels, list(int)
@@ -122,7 +125,7 @@ def train_cnn(**kwargs):
         for filename in os.listdir(data_path):
             if filename.endswith(".csv"):
                 l3_idx = int(filename.split('.csv')[0])
-                if l3_idx not in set_others:
+                if l3_idx in level3_cat_ids:
                     df_train = pd.read_csv(os.path.join(data_path, filename), encoding='utf-8')
                     X_train = df_train['tokenized_name'] + " " + df_train['tokenized_desc']
                     train_title = [clean_text(doc) for doc in X_train.values]

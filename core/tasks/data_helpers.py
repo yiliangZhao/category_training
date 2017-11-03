@@ -26,12 +26,10 @@ def pad_sentences(sentences, vocabulary, max_len, padding_word="<PAD/>"):
     # counter to keep track how many items are truncated
     hh = 0
 
-    # sequence_length is the longest document in terms of number of tokens
-    sequence_length = max(len(x) for x in sentences)
+    # sequence_length is the length of the longest document in terms of number of tokens or max-len,
+    # whichever is shorter
+    sequence_length = min(max(len(x) for x in sentences), max_len)
     padded_sentences = []
-
-    if sequence_length > max_len:
-        sequence_length = max_len
 
     for i in range(len(sentences)):
         sentence = [word for word in sentences[i] if word in vocabulary]
@@ -40,7 +38,7 @@ def pad_sentences(sentences, vocabulary, max_len, padding_word="<PAD/>"):
             new_sentence = sentence + [padding_word] * num_padding
         else:
             new_sentence = sentence[:sequence_length]
-            hh = hh + 1
+            hh += 1
         padded_sentences.append(new_sentence)
     print ('%d in %d documents are truncated' % (hh, len(sentences)))
     return padded_sentences
@@ -192,10 +190,13 @@ def get_W(word_vecs, vocab, k=50):
 
 def load_gensim_w2v(fname, vocab):
     """
-    Loads 300x1 word vecs from Google (Mikolov) word2vec
-    :param fname:
-    :param vocab:
-    :return:
+    Construct dictionary that maps word to its word embedding
+    param fname: path to word embedding file
+    :type str
+    :param vocab: mapping from word token to index
+    :type dict
+    :return: dictionary that maps word to its word embedding
+    :rtype: dict
     """
     word_vecs = {}
     w2v_model = Word2Vec.load(fname)
@@ -205,10 +206,15 @@ def load_gensim_w2v(fname, vocab):
     return word_vecs
 
 
-def add_unknown_words(word_vecs, vocab,k=50):
+def add_unknown_words(word_vecs, vocab, k):
     """
-    For words that occur in at least min_df documents, create a separate word vector.    
-    0.25 is chosen so the unknown vectors have (approximately) same variance as pre-trained ones
+    For words that do not exist in the previous word embedding, initialize the word embedding randomly.
+    For words that occur in at least min_df documents, create a separate word vector. 0.25 is chosen so the unknown
+    vectors have (approximately) same variance as pre-trained ones
+    :param word_vecs: existing word to word embedding mapping
+    :param vocab:
+    :param k: dimension of word embedding
+    :return:
     """
     word_vecs["<PAD/>"] = np.zeros(k, dtype='float32')
     print ('automatic added')

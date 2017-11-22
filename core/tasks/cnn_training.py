@@ -43,6 +43,7 @@ W2V_FILE = '/data1/w2v_files/w2v_tw/300_dim/largewv_300_2'
 CATID_NAME_MAPPING = "/data1/category_production/catid_catname.csv"
 LEVEL3_CAT_LIST = "/data1/category_production/catlist.pickle"
 
+
 def in_top3(y_tue, y_pred):
     return top_k_categorical_accuracy(y_tue, y_pred, k=3)
 
@@ -109,13 +110,20 @@ def clean_text(doc):
 
 
 def train_cnn(**kwargs):
+    """
+    Entry point of airflow task for CNN training
+    :param kwargs:
+    :return:
+    """
     # Load the list of main catids
     with open(MAIN_CAT_LIST, 'rb') as f:
         cat_ids = pickle.load(f)
 
     with open(LEVEL3_CAT_LIST, 'rb') as f:
         level3_cat_ids = pickle.load(f)
+
     print ('Number of level3 categories to be predicted: %d' % len(level3_cat_ids))
+<<<<<<< HEAD
     # df_cat_name = pd.read_csv(CATID_NAME_MAPPING)
     # set_others = set(df_cat_name['level3_cat'])
     count = 0
@@ -124,19 +132,26 @@ def train_cnn(**kwargs):
         print ('processing: %d, count = %d' %(cat_id, count))
         all_title = [] # list of title + description, list(str)
         all_label = [] # list of labels, list(int)
+=======
+
+    for cat_id in cat_ids:
+        print ('processing: %d' % cat_id)
+        all_title = []  # list of title + description, list(str)
+        all_label = []  # list of labels, list(int)
+>>>>>>> a61ec24988f168e4bb8ddeda70f4a48cbc0bebab
         data_path = "/data1/category_production/category_data/%d" % cat_id
         for filename in os.listdir(data_path):
             if filename.endswith(".csv"):
                 l3_idx = int(filename.split('.csv')[0])
                 if l3_idx in level3_cat_ids:
-                    print ('load data for level3_cat: %d' %l3_idx)
+                    print ('load data for level3_cat: %d' % l3_idx)
                     df_train = pd.read_csv(os.path.join(data_path, filename), encoding='utf-8')
-                    X_train = df_train['tokenized_name'] + " " + df_train['tokenized_desc']
-                    train_title = [clean_text(doc) for doc in X_train.values]
+                    x_train = df_train['tokenized_name'] + " " + df_train['tokenized_desc']
+                    train_title = [clean_text(doc) for doc in x_train.values]
                     train_label = [l3_idx] * len(train_title)
-                    all_title = all_title + train_title
-                    all_label = all_label + train_label
-        print('data loaded for main cat: %d' %cat_id)
+                    all_title += train_title
+                    all_label += train_label
+        print('data loaded for main cat: %d' % cat_id)
 
         # Create the mapping from label to index, where index ranges from 0 to len(all_label) - 1
         dict_label = encode_train(all_label)
@@ -145,21 +160,24 @@ def train_cnn(**kwargs):
         train_y = encode_apply(all_label, dict_label)
 
         embedding_dim = 300
-        max_dict_title = 70000  # test whether it should be set to be max vocab
-        max_len_title = 50  # maximum number of tokens to be considered
+        max_dict_title = 70000  # maximum vocabulary size to be considered
+        max_len_title = 50  # maximum number of tokens to be considered in title + description
 
-        # train_vec_title is a 2-D numpy array of dimension: number_title * max_len_title
+        # train_vec_title is a 2-D numpy array of dimension: number_of_title * max_len_title
         # vocab_title is a dict that maps word token to index
-        # vocabulary_inv_title is a list of word tokens
-        train_vec_title, vocab_title, vocabulary_inv_title = load_data(all_title, max_dict_title, max_len_title)
+        # list_words is a list of word tokens
+        train_vec_title, vocab_title, list_words = load_data(all_title, max_dict_title, max_len_title)
 
         print ('keras is ready for running for %d' % cat_id)
         print ('Number of data points is', train_vec_title.shape[0])
 
         print ("loading word2vec vectors...",)
+
+        # w2v is a dictionaory that maps word to its word embedding
         w2v = load_gensim_w2v(W2V_FILE, vocab_title)
 
         print ("num words already in word2vec: " + str(len(w2v)))
+
         add_unknown_words(w2v, vocab_title, embedding_dim)
         W = get_W(w2v, vocab_title, embedding_dim)
         print (type(W))
@@ -180,7 +198,7 @@ def train_cnn(**kwargs):
         input_shape = (sequence_length,)
 
         model_input = Input(shape=input_shape)
-        z = Embedding(len(vocabulary_inv_title), embedding_dim, input_length=sequence_length, weights=[W],
+        z = Embedding(len(list_words), embedding_dim, input_length=sequence_length, weights=[W],
                       name="embedding")(model_input)
         conv_blocks = []
         for sz in filter_sizes:

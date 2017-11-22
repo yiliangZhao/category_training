@@ -118,8 +118,10 @@ def train_cnn(**kwargs):
     print ('Number of level3 categories to be predicted: %d' % len(level3_cat_ids))
     # df_cat_name = pd.read_csv(CATID_NAME_MAPPING)
     # set_others = set(df_cat_name['level3_cat'])
+    count = 0
     for cat_id in cat_ids:
-        print ('processing: %d' %cat_id)
+        count += 1
+        print ('processing: %d, count = %d' %(cat_id, count))
         all_title = [] # list of title + description, list(str)
         all_label = [] # list of labels, list(int)
         data_path = "/data1/category_production/category_data/%d" % cat_id

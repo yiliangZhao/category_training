@@ -94,4 +94,4 @@ def get_data(**kwargs):
                 pandas_final.to_csv(os.path.join(category_data_dir, str(cat3) + '.csv'), index=None, encoding='utf-8')
 
 if __name__ == '__main__':
-    get_data(cat_idx=int(sys.argv[1]))
+    get_data(cat_idx=range(20))

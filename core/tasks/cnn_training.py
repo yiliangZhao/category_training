@@ -123,7 +123,7 @@ def train_cnn(**kwargs):
         level3_cat_ids = pickle.load(f)
 
     print ('Number of level3 categories to be predicted: %d' % len(level3_cat_ids))
-<<<<<<< HEAD
+    
     # df_cat_name = pd.read_csv(CATID_NAME_MAPPING)
     # set_others = set(df_cat_name['level3_cat'])
     count = 0
@@ -132,19 +132,13 @@ def train_cnn(**kwargs):
         print ('processing: %d, count = %d' %(cat_id, count))
         all_title = [] # list of title + description, list(str)
         all_label = [] # list of labels, list(int)
-=======
 
-    for cat_id in cat_ids:
-        print ('processing: %d' % cat_id)
-        all_title = []  # list of title + description, list(str)
-        all_label = []  # list of labels, list(int)
->>>>>>> a61ec24988f168e4bb8ddeda70f4a48cbc0bebab
         data_path = "/data1/category_production/category_data/%d" % cat_id
         for filename in os.listdir(data_path):
             if filename.endswith(".csv"):
                 l3_idx = int(filename.split('.csv')[0])
                 if l3_idx in level3_cat_ids:
-                    print ('load data for level3_cat: %d' % l3_idx)
+                    # print ('load data for level3_cat: %d' % l3_idx)
                     df_train = pd.read_csv(os.path.join(data_path, filename), encoding='utf-8')
                     x_train = df_train['tokenized_name'] + " " + df_train['tokenized_desc']
                     train_title = [clean_text(doc) for doc in x_train.values]

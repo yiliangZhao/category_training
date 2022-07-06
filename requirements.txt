@@ -40,7 +40,7 @@ googleapis-common-protos==1.5.2
 GoogleAppEngineCloudStorageClient==1.9.22.1
 gunicorn==19.3.0
 h5py==2.7.1
-html5lib==0.9999999
+html5lib==0.999999999
 httplib2==0.10.3
 idna==2.6
 ipykernel==4.6.1
